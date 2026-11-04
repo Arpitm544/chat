@@ -12,6 +12,7 @@ const { initializeSocket } = require("./lib/socket")
 
 const app = express()
 const server = http.createServer(app)
+const HEALTHCHECK_INTERVAL_MS = 10 * 60 * 1000
 
 // Middlewares
 connectDB()
@@ -34,6 +35,14 @@ app.use(cookieParser())
 app.get("/", (req, res) => {
   res.send("Backend is running")
 })
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  })
+})
 app.use("/user", userRoutes)
 app.use("/messages", authmiddleware, messageRoutes)
 app.use('/groups', authmiddleware, groupRoutes)
@@ -45,3 +54,25 @@ const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
+
+// Set HEALTHCHECK_URL to the deployed service URL (for example,
+// https://your-service.onrender.com/health). Render also supplies
+// RENDER_EXTERNAL_URL, which works as an automatic fallback there.
+const healthcheckUrl = process.env.HEALTHCHECK_URL ||
+  (process.env.RENDER_EXTERNAL_URL && `${process.env.RENDER_EXTERNAL_URL.replace(/\/$/, "")}/health`)
+
+const triggerHealthcheck = async () => {
+  if (!healthcheckUrl) return
+  try {
+    const response = await fetch(healthcheckUrl, { signal: AbortSignal.timeout(10_000) })
+    if (!response.ok) console.warn(`Health check returned ${response.status}`)
+  } catch (error) {
+    console.warn("Health check failed:", error.message)
+  }
+}
+
+if (healthcheckUrl) {
+  triggerHealthcheck()
+  setInterval(triggerHealthcheck, HEALTHCHECK_INTERVAL_MS)
+  console.log(`Health check scheduled every 10 minutes: ${healthcheckUrl}`)
+}
