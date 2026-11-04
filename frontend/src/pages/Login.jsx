@@ -24,8 +24,10 @@ const Login = () => {
             try {
                 await axios.get("/user/check-auth")
                 navigate("/chat", { replace: true });
-            } catch (error) {
-                console.log(error)
+            } catch {
+                // The local marker can outlive the HTTP-only cookie.
+                localStorage.removeItem("userId")
+                localStorage.removeItem("username")
             }
         }
         checkAuth();

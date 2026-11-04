@@ -20,7 +20,7 @@ const App = () => {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
 
-          <Route path='/' element={<Signup />} />
+          <Route path='/' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
