@@ -18,12 +18,14 @@ const HEALTHCHECK_INTERVAL_MS = 10 * 60 * 1000
 connectDB()
  
 app.set("trust proxy", 1);
+const allowedOrigins = [
+  "https://chat-ui-hm84.vercel.app",
+  "https://chat-ui-hm84-lmbz847l2-arpitm544s-projects.vercel.app",
+  "http://localhost:5173",
+  ...((process.env.FRONTEND_URL || "").split(",").map((url) => url.trim()).filter(Boolean)),
+]
 app.use(cors({
-  origin:[
-    "https://chat-ui-hm84.vercel.app",
-    "https://chat-ui-hm84-lmbz847l2-arpitm544s-projects.vercel.app",
-    "http://localhost:5173"
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
