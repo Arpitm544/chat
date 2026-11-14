@@ -1,79 +1,56 @@
 # ChatUI
 
-ChatUI is a real-time messaging application with a React/Vite frontend and an Express, MongoDB, and Socket.IO backend. Users can create accounts, sign in, search for other users, exchange direct messages, create group conversations, upload images, and manage their profiles.
+A real-time messaging application with a React/Vite frontend and an Express, MongoDB, and Socket.IO backend.
+
+**Last updated:** 5 November 2026
 
 ## Features
 
-- Email and password sign-up and login
-- JWT authentication stored in an HTTP-only cookie
-- Password reset using a user security code
-- Search for registered users
-- Direct one-to-one messaging
-- Real-time message delivery with Socket.IO
-- Online user presence
-- Message status indicators
-- Message editing and deletion
-- Group creation, updates, and deletion
-- Group messaging
-- Profile name and image updates
-- Image uploads through Cloudinary
-- Responsive React interface
+- Email/password sign-up, login, and password reset
+- JWT authentication with HTTP-only cookies
+- Direct and group messaging with Socket.IO
+- Online presence, typing indicators, delivery status, message editing, and deletion
+- User search, profile editing, and image uploads
+- Cloudinary-backed image storage
+- Responsive, light messaging UI
+- Health endpoint with an optional 10-minute self-check
+
+## Tech stack
+
+- Frontend: React, Vite, Tailwind CSS, Axios, Socket.IO Client
+- Backend: Node.js, Express, MongoDB/Mongoose, Socket.IO
+- Media: Cloudinary
+- Deployment: Vercel (frontend) and Render (backend)
 
 ## Project structure
 
 ```text
-chat-main/
-├── backend/
-│   ├── controllers/       # User, message, and group routes
-│   ├── db/                # MongoDB connection
-│   ├── lib/               # Cloudinary and Socket.IO setup
-│   ├── middleware/        # Authentication middleware
-│   ├── model/             # Mongoose schemas
-│   └── server.js          # Express and Socket.IO server
-├── frontend/
-│   ├── src/components/    # Chat UI components
-│   ├── src/context/       # Shared chat state
-│   ├── src/pages/         # Authentication pages
-│   └── src/lib/axios.js   # API client
-└── vercel.json            # Frontend/API deployment rewrites
+├── backend/     # Express API, Socket.IO server, MongoDB models
+├── frontend/    # React/Vite application
+└── README.md
 ```
 
-## Requirements
+## Run locally
 
-- Node.js 18 or newer
-- npm
-- MongoDB local instance or MongoDB Atlas database
-- Cloudinary account for image uploads
-
-## Local development
-
-### 1. Install dependencies
+Install dependencies:
 
 ```bash
-cd backend
-npm ci
-
-cd ../frontend
-npm ci
+cd backend && npm ci
+cd ../frontend && npm ci
 ```
-
-### 2. Configure the backend
 
 Create `backend/.env`:
 
 ```env
 PORT=4000
+NODE_ENV=development
 MONGO_URL=mongodb://127.0.0.1:27017/chat-app
 JWT_SECRETKEY=replace-with-a-long-random-secret
 
-CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-CLOUDINARY_API_KEY=your-cloudinary-api-key
-CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
-
-For MongoDB Atlas, replace `MONGO_URL` with the connection string provided by Atlas. URL-encode special characters in the database username or password when required.
-
-### 3. Configure the frontend
 
 Create `frontend/.env.local`:
 
@@ -81,104 +58,79 @@ Create `frontend/.env.local`:
 VITE_BACKEND_URL=http://localhost:4000
 ```
 
-When `VITE_BACKEND_URL` is not set, the frontend uses `/api`, which is proxied to the local backend by Vite during development.
-
-### 4. Start the application
-
-In one terminal:
+Start both apps:
 
 ```bash
-cd backend
-npm start
-```
-
-In another terminal:
-
-```bash
-cd frontend
-npm run dev
+cd backend && npm start
+cd frontend && npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-The backend health endpoint is available at [http://localhost:4000/](http://localhost:4000/).
-
-## Available scripts
-
-### Backend
-
-| Command | Description |
-| --- | --- |
-| `npm start` | Starts the Express and Socket.IO server |
-
-### Frontend
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Starts the Vite development server |
-| `npm run build` | Creates a production build |
-| `npm run preview` | Serves the production build locally |
-| `npm run lint` | Runs ESLint |
-
-## API overview
-
-All protected routes require the authentication cookie created during login.
-
-| Method | Route | Description |
-| --- | --- | --- |
-| `POST` | `/user/signup` | Create an account |
-| `POST` | `/user/login` | Sign in |
-| `POST` | `/user/forgot-password` | Reset a password |
-| `GET` | `/user/check-auth` | Check authentication |
-| `GET` | `/user/search` | Search for users |
-| `PUT` | `/user/update-profile` | Update profile details |
-| `DELETE` | `/user/logout` | Sign out |
-| `GET` | `/messages` | Get the current user's conversations |
-| `GET` | `/messages/:id` | Get direct messages |
-| `POST` | `/messages/:id` | Send a direct message |
-| `GET` | `/groups/mygroups` | Get the current user's groups |
-| `POST` | `/groups/create` | Create a group |
-
 ## Deployment
 
-The frontend can be deployed to Vercel and the backend to a Node-compatible service such as Render.
+### Render backend
 
-### Backend environment variables
+Set the Render service root directory to `backend`.
 
-Configure these variables in the backend hosting service:
+```text
+Build Command: npm ci
+Start Command: npm start
+```
+
+Set these environment variables:
 
 ```env
+NODE_ENV=production
 MONGO_URL=your-mongodb-atlas-connection-string
-JWT_SECRETKEY=your-production-secret
-CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-CLOUDINARY_API_KEY=your-cloudinary-api-key
-CLOUDINARY_API_SECRET=your-cloudinary-api-secret
-FRONTEND_URL=https://your-frontend-domain.example
+JWT_SECRETKEY=your-long-random-secret
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+FRONTEND_URL=https://your-frontend-domain.vercel.app
+HEALTHCHECK_URL=https://chat-8t8f.onrender.com/health
 ```
 
-`FRONTEND_URL` may contain multiple comma-separated frontend origins when needed.
+`PORT` is supplied by Render and should not be set manually.
 
-### Frontend environment variables
+### Vercel frontend
 
-Configure:
+Set the Vercel project root directory to `frontend`.
+
+```text
+Build Command: npm run build
+Output Directory: dist
+```
+
+Add:
 
 ```env
-VITE_BACKEND_URL=https://your-backend-domain.example
+VITE_BACKEND_URL=https://chat-8t8f.onrender.com
 ```
 
-Make sure the frontend origin is included in the backend's `FRONTEND_URL` value and that cookies are enabled for cross-origin requests.
+After setting `VITE_BACKEND_URL`, update the backend's `FRONTEND_URL` with the exact Vercel deployment URL, then redeploy both services.
 
-## Security notes
+## Health check
 
-- Never commit `.env` or `.env.local` files.
-- Use a long, unique `JWT_SECRETKEY` in production.
-- Do not use the development MongoDB connection string in production.
-- Restrict the MongoDB Atlas network access list to the required deployment and development IPs.
-- Keep Cloudinary and database credentials private.
-- Use HTTPS in production so authentication cookies can be transmitted securely.
+`GET /health` returns a JSON response containing the service status, uptime, and timestamp.
 
-## Current limitations
+When `HEALTHCHECK_URL` is set, the backend calls that URL at startup and every 10 minutes.
 
-- There are no automated backend tests configured yet.
-- Image upload and profile image updates require valid Cloudinary credentials.
-- The application expects the backend and frontend origins to be configured correctly for credentialed requests.
+For the deployed backend:
+
+[https://chat-8t8f.onrender.com/health](https://chat-8t8f.onrender.com/health)
+
+## Scripts
+
+| Directory | Command | Description |
+| --- | --- | --- |
+| `backend` | `npm start` | Start the Express and Socket.IO server |
+| `frontend` | `npm run dev` | Run Vite locally |
+| `frontend` | `npm run build` | Create a production build |
+| `frontend` | `npm run lint` | Run ESLint |
+
+## Security
+
+- Never commit `.env` or `.env.local`.
+- Keep MongoDB, Cloudinary, and JWT credentials private.
+- Use HTTPS in production so secure authentication cookies work correctly.
